@@ -806,19 +806,18 @@ function renderFilePreview(file, targetInput, previewNode) {
       ? `<iframe src="${objectUrl}" title="Vista previa de ${escapeHtml(file.name)}"></iframe>`
       : `<p>Archivo cargado. La app lo leerá por dentro para analizarlo.</p>`;
 
-  targetInput.classList.add("input-hidden-by-file");
   previewNode.classList.remove("hidden");
   previewNode.innerHTML = `
     <div class="file-preview-header">
       <div class="file-preview-title">${escapeHtml(file.name)}</div>
-      <button class="file-preview-action" type="button">Ver texto</button>
+      <button class="file-preview-action" type="button">Ir al texto</button>
     </div>
     <div class="file-preview-body">${body}</div>
   `;
 
   previewNode.querySelector(".file-preview-action").addEventListener("click", () => {
-    const isHidden = targetInput.classList.toggle("input-hidden-by-file");
-    previewNode.querySelector(".file-preview-action").textContent = isHidden ? "Ver texto" : "Ocultar texto";
+    targetInput.focus();
+    targetInput.scrollIntoView({ behavior: "smooth", block: "center" });
   });
 }
 
@@ -961,8 +960,6 @@ clearBtn.addEventListener("click", () => {
   jobInput.value = "";
   cvFileInput.value = "";
   jobFileInput.value = "";
-  cvInput.classList.remove("input-hidden-by-file");
-  jobInput.classList.remove("input-hidden-by-file");
   cvFilePreview.classList.add("hidden");
   jobFilePreview.classList.add("hidden");
   cvFilePreview.innerHTML = "";

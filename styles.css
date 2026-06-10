@@ -209,6 +209,27 @@ textarea:focus {
   padding: 14px;
 }
 
+.detected-text {
+  display: block;
+  margin-top: 12px;
+}
+
+.detected-text:first-of-type {
+  margin-top: 0;
+}
+
+.detected-text span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.file-preview + .detected-text textarea {
+  min-height: 190px;
+}
+
 .file-preview {
   min-height: 275px;
   overflow: hidden;
@@ -261,7 +282,7 @@ textarea:focus {
 }
 
 .input-hidden-by-file {
-  display: none;
+  display: block;
 }
 
 .file-tools {
