@@ -778,18 +778,51 @@ function handleTextFile(file, targetInput, statusNode) {
   reader.readAsText(file, "utf-8");
 }
 
+async function handleImageFile(file, targetInput, statusNode, label) {
+  if (!window.Tesseract) {
+    statusNode.textContent = "No se pudo cargar el lector de imágenes. Revisa tu conexión e intenta otra vez.";
+    return;
+  }
+
+  statusNode.textContent = `${label}: leyendo imagen... 0%`;
+  try {
+    const result = await Tesseract.recognize(file, "spa+eng", {
+      logger: (event) => {
+        if (event.status === "recognizing text") {
+          const progress = Math.round((event.progress || 0) * 100);
+          statusNode.textContent = `${label}: leyendo imagen... ${progress}%`;
+        }
+      }
+    });
+    const text = result.data.text.trim();
+    if (!text) {
+      statusNode.textContent = "No pude detectar texto en la imagen. Intenta una captura más clara.";
+      return;
+    }
+    targetInput.value = text;
+    statusNode.textContent = `Texto extraído de ${describeFile(file)}`;
+    showToast("Texto extraído de la imagen");
+  } catch {
+    statusNode.textContent = "No pude leer la imagen. Intenta con una captura más clara o pega el texto.";
+  }
+}
+
 function handlePickedFile(event, targetInput, statusNode, label) {
   const file = event.target.files?.[0];
   if (!file) return;
   const isText = file.type.startsWith("text/") || file.name.toLowerCase().endsWith(".txt");
+  const isImage = file.type.startsWith("image/");
 
   if (isText) {
     handleTextFile(file, targetInput, statusNode);
     return;
   }
+  if (isImage) {
+    handleImageFile(file, targetInput, statusNode, label);
+    return;
+  }
 
-  const kind = file.type.startsWith("image/") ? "foto/captura" : "archivo";
-  statusNode.textContent = `${label}: ${describeFile(file)}. Es ${kind}; para analizarlo pega también el texto visible.`;
+  statusNode.textContent = `${label}: ${describeFile(file)}. Por ahora PDF/DOCX no se leen solos; usa captura o TXT.`;
   showToast("Archivo seleccionado");
 }
 
@@ -811,8 +844,8 @@ clearBtn.addEventListener("click", () => {
   jobInput.value = "";
   cvFileInput.value = "";
   jobFileInput.value = "";
-  cvFileStatus.textContent = "Puedes adjuntar PDF, foto o TXT. Si es TXT, se pega automáticamente.";
-  jobFileStatus.textContent = "Puedes adjuntar captura, PDF o TXT. Si es TXT, se pega automáticamente.";
+  cvFileStatus.textContent = "Puedes adjuntar TXT o foto. La foto se leerá automáticamente con OCR.";
+  jobFileStatus.textContent = "Puedes adjuntar captura o TXT. La captura se leerá automáticamente con OCR.";
   results.classList.add("hidden");
   cvInput.focus();
 });

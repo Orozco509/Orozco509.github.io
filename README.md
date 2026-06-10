@@ -9,7 +9,7 @@ App web estática para analizar vacantes publicadas en grupos de Facebook y prep
 3. Se abrirá en tu navegador.
 4. Pega tu CV en el primer campo.
 5. Pega la publicacion de Facebook en el segundo campo.
-6. También puedes usar `Examinar archivo` para seleccionar un TXT, PDF o foto. Los TXT se cargan al campo automáticamente; para PDF o foto pega el texto visible para poder analizarlo.
+6. También puedes usar `Examinar archivo` para seleccionar un TXT o una foto/captura. Los TXT se cargan al campo automáticamente y las imágenes se leen con OCR en el navegador.
 7. Haz clic en `Analizar vacante`.
 8. Revisa compatibilidad, requisitos, alertas y recomendación.
 9. Usa los botones `Copiar` para llevarte el comentario, inbox, WhatsApp o perfil mejorado.
