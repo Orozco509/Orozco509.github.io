@@ -267,6 +267,19 @@ textarea:focus {
   font-weight: 800;
 }
 
+.file-preview-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: var(--green);
+  background: rgba(15, 159, 110, 0.1);
+  font-size: 0.84rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 .file-preview-body {
   display: grid;
   place-items: center;

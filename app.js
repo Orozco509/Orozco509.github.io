@@ -1039,15 +1039,10 @@ function renderFilePreview(file, targetInput, previewNode) {
   previewNode.innerHTML = `
     <div class="file-preview-header">
       <div class="file-preview-title">${escapeHtml(file.name)}</div>
-      <button class="file-preview-action" type="button">Ir al texto</button>
+      <span class="file-preview-pill">Archivo cargado</span>
     </div>
     <div class="file-preview-body">${body}</div>
   `;
-
-  previewNode.querySelector(".file-preview-action").addEventListener("click", () => {
-    targetInput.focus();
-    targetInput.scrollIntoView({ behavior: "smooth", block: "center" });
-  });
 }
 
 function hideDetectedText(targetInput) {
@@ -1075,28 +1070,16 @@ function handleTextFile(file, targetInput, statusNode) {
 }
 
 async function handleImageFile(file, targetInput, statusNode, label) {
+  hideDetectedText(targetInput);
   try {
-    let text = await ocrWithOcrSpace(file, statusNode, label);
-    if (looksLikeBadOcr(text) && window.Tesseract) {
-      statusNode.textContent = `${label}: mejorando lectura local...`;
-      text = await recognizeImageSmart(file, statusNode, label);
-    }
+    const text = await ocrWithOcrSpace(file, statusNode, label);
     if (setExtractedText(targetInput, text, statusNode, file, "la imagen")) {
-      showToast("Texto extraído de la imagen");
+      statusNode.textContent = `Archivo leído correctamente: ${describeFile(file)}`;
+      showToast("Archivo leído");
     }
   } catch {
-    if (!window.Tesseract) {
-      statusNode.textContent = "No pude leer la imagen. Revisa tu conexión o intenta con otra captura.";
-      return;
-    }
-    try {
-      const text = await recognizeImageSmart(file, statusNode, label);
-      if (setExtractedText(targetInput, text, statusNode, file, "la imagen")) {
-        showToast("Texto extraído de la imagen");
-      }
-    } catch {
-      statusNode.textContent = "No pude leer la imagen. Intenta con una captura más clara.";
-    }
+    targetInput.value = "";
+    statusNode.textContent = "No pude leer la imagen con OCR externo. Revisa conexión o usa una captura más nítida.";
   }
 }
 
@@ -1131,39 +1114,18 @@ async function ocrPdfPage(page, pageNumber, totalPages, statusNode, label) {
 }
 
 async function handlePdfFile(file, targetInput, statusNode, label) {
+  hideDetectedText(targetInput);
   statusNode.textContent = `${label}: leyendo PDF...`;
   try {
     const cloudText = await ocrWithOcrSpace(file, statusNode, label);
     if (setExtractedText(targetInput, cloudText, statusNode, file, "el PDF")) {
-      showToast("Texto extraído del PDF");
+      statusNode.textContent = `Archivo leído correctamente: ${describeFile(file)}`;
+      showToast("Archivo leído");
       return;
     }
   } catch {
-    statusNode.textContent = `${label}: OCR en nube no pudo leerlo, intentando lectura local...`;
-  }
-
-  try {
-    const pdfjsLib = await getPdfJs();
-    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs";
-    const buffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-    const pages = [];
-
-    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-      statusNode.textContent = `${label}: leyendo PDF página ${pageNumber} de ${pdf.numPages}`;
-      const page = await pdf.getPage(pageNumber);
-      let pageText = await extractTextFromPdfPage(page);
-      if (!pageText || pageText.length < 20) {
-        pageText = await ocrPdfPage(page, pageNumber, pdf.numPages, statusNode, label);
-      }
-      pages.push(pageText);
-    }
-
-    if (setExtractedText(targetInput, pages.join("\n\n"), statusNode, file, "el PDF")) {
-      showToast("Texto extraído del PDF");
-    }
-  } catch {
-    statusNode.textContent = "No pude leer el PDF. Intenta subir una foto/captura clara del CV.";
+    targetInput.value = "";
+    statusNode.textContent = "No pude leer el PDF con OCR externo. Intenta exportarlo como imagen clara o TXT.";
   }
 }
 
@@ -1176,6 +1138,7 @@ function handlePickedFile(event, targetInput, statusNode, previewNode, label) {
   const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
 
   if (isText) {
+    showDetectedText(targetInput);
     handleTextFile(file, targetInput, statusNode);
     return;
   }
